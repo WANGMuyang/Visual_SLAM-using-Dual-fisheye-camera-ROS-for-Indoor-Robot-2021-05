@@ -1,0 +1,85 @@
+주의 사항)
+1. SocketViewer 사용하는 옵션으로 빌드할 것
+
+2. ros에서 실행하는 파일들은 --frame-skip, --no-sleep 옵션이 없다. 만들고 싶으면 run_video_slam.cc 파일보고 참고하면 될듯하다.
+
+3. Tracking module에서 현재 위치를 받아서 station으로 저장, mapping module의 run_to_set_station으로 mapping module은 돌리지만 station만 저장됨
+
+
+1. 설치
+
+주의 사항)
+ - OpenVSLAM 커뮤니티 ( https://openvslam-community.readthedocs.io/en/latest/index.html ) 보고 참고 할 것
+ - 중요한 건 SocketViewer 사용하는 옵션으로 빌드할 것
+ - ROS 빌드 할 경우 ~/openvslam/ros/src 안에 필요한 ros node들을 넣고 
+
+   catkin_make -DUSE_PANGOLIN_VIEWER=OFF -DUSE_SOCKET_PUBLISHER=ON 실행 할 것
+
+ - ROS workspace는 gedit ~/.bashrc에서 source ~/openvslam/ros/devel/setup.bash 로 하나만 설정해준 후 source ~/.bashrc
+ - config file, DBOW2 경로 설정해주기 잘 할 것
+
+2. roscore
+
+3. ~/openvslam/viewer -> node app.js 통해 viewer 킬 것
+
+0. config file은 1920,960이나 1280,640(현재 설정)으로 고정시켜놓는다.
+
+1. ricoh theta s 동영상 녹화(1920,1080),(1280,720)로 녹화 한 후 이를 theta app으로 변환시켜준다. -> (1920, 960),(1280,640)이 된다.
+
+2. rosrun publisher video -l  -m /home/alpha/videos/1280_720_er.MP4
+   
+   rosrun image_transport republish raw in:=/video/image_raw out:=/camera/image_raw
+
+   cd openvslam/build
+   rosrun openvslam run_slam -v ./orb_vocab/orb_vocab.dbow2 -c ./aist_living_lab_1/config.yaml --map-db map.msg 
+
+   (orb_vocab, config파일 경로 맞는지 확인 할 것)
+
+   -> mapping file 생성!
+
+
+3. opengl_ros의 defisheye node를 사용해서 localization 할 것 (라이브로 영상을 변환할 때 쓰는 node)
+
+   cd openvslam/build
+   rosrun openvslam run_localization -v ./orb_vocab/orb_vocab.dbow2 -c ./aist_living_lab_1/config.yaml --map-db map.msg
+
+   (orb_vocab, config파일 경로 맞는지 확인 할 것)
+
+   rosrun opengl_ros defisheye (이미지 사이즈 확인 할 것)
+
+   rosrun publisher video -l  -m /home/alpha/videos/1280_720.MP4
+   
+   localization이 잘되나 확인해볼것
+
+4. cd single_image_publisher
+   python single_image_publisher.py ( 이미지 1장을 일정시간동안 camera/image_raw 라는 이름으로 이미지를 publish 해줌 )
+
+   cd openvslam/build
+   rosrun openvslam set_station_localization -v ./orb_vocab/orb_vocab.dbow2 -c ./aist_living_lab_1/config.yaml --map-db map.msg
+
+							또는
+   cd openvslam/build
+   rosrun openvslam set_station_localization_with_path -v ./orb_vocab/orb_vocab.dbow2 -c ./aist_living_lab_1/config.yaml --map-db map.msg
+
+
+
+5. 이렇게 station을 넣어주면
+
+   cd openvslam/build
+   rosrun openvslam publish_current_location -v ./orb_vocab/orb_vocab.dbow2 -c ./aist_living_lab_1/config.yaml --map-db map.msg
+   이걸 통해 현재 map에서의 위치를 ros msg로 받을 수 있다.
+
+   cd openvslam_occ_grid-master
+   python3 plotter.py /home/alpha/openvslam/build/map.msg /home/alpha/openvslam_occ_grid-master/config.yaml
+
+   cd openvslam_occ_grid-master
+   python ackermann_publisher.py
+
+   roslaunch vesc_driver vesc.launch 또는 roslaunch defisheye_theta_s_vesc.launch
+
+   
+
+
+
+
+

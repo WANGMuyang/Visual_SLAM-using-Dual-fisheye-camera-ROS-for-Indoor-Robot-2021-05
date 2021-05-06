@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="width"     default="1280"/>
+  <arg name="height"    default="720"/>
+  <arg name="image_in" default="/video/image_raw"/>
+  <arg name="image_out" default="/camera/image_raw"/>
+
+  <node pkg="opengl_ros" type="defisheye"
+    name="defisheye" output="screen">
+    <param name="width"  value="$(arg width)"/>
+    <param name="height" value="$(arg height)"/>
+    <param name="image_in"  value="$(arg image_in)"/>
+    <param name="image_out" value="$(arg image_out)"/>  
+  </node>
+
+</launch>

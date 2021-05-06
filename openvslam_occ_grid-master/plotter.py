@@ -71,7 +71,11 @@ class Plotter:
 		self.image_row = 1000
 		self.image_cols = 1000
 
-		self.scale_integer = 30
+		#시작점을 설정해주는 파라미터
+		self.move_row = int(self.image_row*0.5)
+		self.move_cols = int(self.image_row*0.3)
+
+		self.scale_integer = 50
 
 		"""
 		Extract keyframe poses
@@ -164,24 +168,24 @@ class Plotter:
 
 		# draw keyframes_position
 		for index in range(len(self.keyframes_pos)):
-			cv2.circle(self.img,(int(-self.keyframes_pos[index][0]*self.scale_integer+self.image_row/2),
-							int(self.keyframes_pos[index][1]*self.scale_integer+self.image_cols/2)),1,(255,255,255))
+			cv2.circle(self.img,(int(-self.keyframes_pos[index][0]*self.scale_integer+self.move_row),
+							int(self.keyframes_pos[index][1]*self.scale_integer+self.move_cols)),1,(255,255,255))
 
 		# draw stations_position
 		if(self.stations_pos.any()):
 			for index in range(len(self.stations_pos)):
-				cv2.circle(self.img,(int(-self.stations_pos[index][0]*self.scale_integer+self.image_row/2),
-								int(self.stations_pos[index][1]*self.scale_integer+self.image_cols/2)),5,(255,255,0),-1)
+				cv2.circle(self.img,(int(-self.stations_pos[index][0]*self.scale_integer+self.move_row),
+								int(self.stations_pos[index][1]*self.scale_integer+self.move_cols)),5,(255,255,0),-1)
 
 		# draw current_position
-		self.current_local_x = int(-self.current_location_pos[0]*self.scale_integer+self.image_row/2)
-		self.current_local_y = int(self.current_location_pos[1]*self.scale_integer+self.image_cols/2)
+		self.current_local_x = int(-self.current_location_pos[0]*self.scale_integer+self.move_row)
+		self.current_local_y = int(self.current_location_pos[1]*self.scale_integer+self.move_cols)
 		cv2.circle(self.img,(self.current_local_x,self.current_local_y),3,(0,255,0),-1)
 
 
 		# draw heading = a vector from current_position(green) to red_circle is heading vector
-		self.current_heading_x = int(-(self.current_location_pos[0]*self.scale_integer - self.current_location_heading_vector[0]*self.scale_integer)+self.image_row/2)
-		self.current_heading_y = int((self.current_location_pos[1]*self.scale_integer + self.current_location_heading_vector[1]*self.scale_integer+self.image_cols/2))
+		self.current_heading_x = int(-(self.current_location_pos[0]*self.scale_integer - self.current_location_heading_vector[0]*self.scale_integer)+ self.move_row)
+		self.current_heading_y = int((self.current_location_pos[1]*self.scale_integer + self.current_location_heading_vector[1]*self.scale_integer+ self.move_cols))
 		cv2.circle(self.img,(self.current_heading_x,self.current_heading_y),3,(0,0,255),-1)
 
 		cv2.line(self.img,(self.current_local_x,self.current_local_y),(self.current_heading_x,self.current_heading_y),(0,0,255),2)
@@ -206,8 +210,8 @@ class Plotter:
 			if(Slope != 0):
 				Reverse_Slope = -1/Slope
 
-				width_of_roi = 30
-				height_of_roi = 30
+				width_of_roi = 20
+				height_of_roi = 20
 				local_width_slope = width_of_roi/Slope
 				local_width_reverse_slope = height_of_roi/Reverse_Slope
 
@@ -225,11 +229,11 @@ class Plotter:
 				# local_area_point1 & local_area_point2가 영역 범위임
 				cv2.rectangle(self.img,local_area_point1,local_area_point2,(0,255,255),2)
 
-				station_x = (-self.stations_pos[0][0]*self.scale_integer+self.image_row/2)
-				station_y = (self.stations_pos[0][1]*self.scale_integer+self.image_cols/2)
+				station_x = (-self.stations_pos[0][0]*self.scale_integer+self.move_row)
+				station_y = (self.stations_pos[0][1]*self.scale_integer+self.move_cols)
 
 				most_minumun_differnece_index_of_keyframe = -1
-				Difference = 1000000
+				Difference = 999999
 
 				heading_local_vector = [self.current_heading_x - self.current_local_x, 
 										self.current_heading_y - self.current_local_y]
@@ -240,8 +244,8 @@ class Plotter:
 				distance_between_current_local_and_station = (self.current_local_x - station_x)**2 + (self.current_local_y - station_y)**2
 
 				for index in range(len(self.keyframes_pos)):
-					keyframe_x = (-self.keyframes_pos[index][0]*self.scale_integer+self.image_row/2)
-					keyframe_y = (self.keyframes_pos[index][1]*self.scale_integer+self.image_cols/2)
+					keyframe_x = (-self.keyframes_pos[index][0]*self.scale_integer+self.move_row)
+					keyframe_y = (self.keyframes_pos[index][1]*self.scale_integer+self.move_cols)
 					distance_between_keyframe_and_station = (keyframe_x - station_x)**2 + (keyframe_y - station_y)**2
 
 					# print("distance_between_current_local_and_station",distance_between_current_local_and_station)
@@ -262,8 +266,8 @@ class Plotter:
 
 				if(most_minumun_differnece_index_of_keyframe>-1):
 					# follow this keyframe
-					keyframe_x = int(-self.keyframes_pos[most_minumun_differnece_index_of_keyframe][0]*self.scale_integer+self.image_row/2)
-					keyframe_y = int(self.keyframes_pos[most_minumun_differnece_index_of_keyframe][1]*self.scale_integer+self.image_cols/2)
+					keyframe_x = int(-self.keyframes_pos[most_minumun_differnece_index_of_keyframe][0]*self.scale_integer+self.move_row)
+					keyframe_y = int(self.keyframes_pos[most_minumun_differnece_index_of_keyframe][1]*self.scale_integer+self.move_cols)
 					cv2.circle(self.img,(keyframe_x,keyframe_y),5,(255,255,255),-1)
 
 					local_keyframe_vector =  [keyframe_x - self.current_local_x, keyframe_y - self.current_local_y]
@@ -271,15 +275,19 @@ class Plotter:
 					theta = theta_between_two_vector(heading_local_vector, keyframe_local_vector)
 
 					print("theta",theta)
+					print("distance_between_current_local_and_station",round(distance_between_current_local_and_station,3))
 
-					if(distance_between_current_local_and_station<5):
+					if(distance_between_current_local_and_station<100):
 						print("stop")
-						self.car_steering = 100
+						self.car_steering = 2000
 					else:
-						self.car_steering = -(theta*math.pi/180) # 부호 반대임, radian으로 넣어준다
-						self.car_steering = round(self.car_steering,2)
-						print("car_steering",self.car_steering)
-						self.pub.publish(self.car_steering)
+						self.car_steering = -(theta*3.14/180) - 0.01 # 부호 반대임, radian으로 넣어준다
+						if(self.car_steering<0):
+							print("car_steering, 좌회전",round(self.car_steering,3))
+						else:
+							print("car_steering, 우회전",round(self.car_steering,3))
+
+					self.pub.publish(self.car_steering)
 					# secs = time.time()
 					# print(secs)   # 모든 키프레임 위치에서 검사하면 0.0006초 정도 걸림
 

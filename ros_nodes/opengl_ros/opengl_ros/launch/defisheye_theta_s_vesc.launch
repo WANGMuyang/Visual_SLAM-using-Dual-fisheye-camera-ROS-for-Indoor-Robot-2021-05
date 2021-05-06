@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="camera_name" default="theta_s_uvc"/>
+  <arg name="device"    default="/dev/video2"/>
+  <arg name="width"     default="1280"/>
+  <arg name="height"    default="720"/>
+  <arg name="framerate" default="15"/>
+  <arg name="image_in" default="/theta_s_uvc/image_raw"/>
+  <arg name="image_out" default="/camera/image_raw"/>
+
+  <param name="speed_to_erpm_gain" type="double" value="4614"/>
+  <param name="speed_to_erpm_offset" type="double" value="0.0"/>
+  <param name="steering_angle_to_servo_gain" type="double" value="-1.2135"/>
+  <param name="steering_angle_to_servo_offset" type="double" value="0.5304"/>
+  <param name="wheelbase" type="double" value="0.250"/>
+
+  <node name="$(arg camera_name)" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="camera_name" value="$(arg camera_name)"/>
+    <param name="camera_frame_id" value="$(arg camera_name)"/> 
+    <param name="video_device" value="$(arg device)" />
+    <param name="image_width" value="$(arg width)" />
+    <param name="image_height" value="$(arg height)" />
+    <param name="framerate" value="$(arg framerate)"/>
+    <param name="pixel_format" value="mjpeg" />
+    <param name="io_method" value="mmap"/>
+  </node>
+
+  <node pkg="opengl_ros" type="defisheye"
+    name="defisheye" output="screen">
+    <param name="width"  value="$(arg width)"/>
+    <param name="height" value="$(arg height)"/>
+    <param name="image_in"  value="$(arg image_in)"/>
+    <param name="image_out" value="$(arg image_out)"/>  
+  </node>
+
+  <node pkg="vesc_ackermann" type="ackermann_to_vesc_node" name="ackermann_to_vesc">
+    <remap from="ackermann_cmd" to="/ackermann_cmd" />    
+  </node>
+
+  <node pkg="vesc_driver" type="vesc_driver_node" name="vesc_driver">
+    <param name="port" type="string" value="/dev/vesc"/>
+    <param name="duty_cycle_min" type="double" value="0.0"/>
+    <param name="duty_cycle_max" type="double" value="0.0"/>
+    <param name="current_min" type="double" value="0.0"/>
+    <param name="current_max" type="double" value="0.0"/>
+    <param name="brake_min" type="double" value="0.0"/>
+    <param name="brake_max" type="double" value="0.0"/>
+    <param name="speed_min" type="double" value="-4000"/>
+    <param name="speed_max" type="double" value="6000"/>
+    <param name="position_min" type="double" value="0.0"/>
+    <param name="position_max" type="double" value="0.0"/>
+    <param name="servo_min" type="double" value="0.15"/>
+    <param name="servo_max" type="double" value="0.85"/>
+  </node>
+
+  <node pkg="vesc_ackermann" type="vesc_to_odom_node" name="vesc_to_odom">
+    <remap from="odom" to="/odom" />
+  </node>
+</launch>
