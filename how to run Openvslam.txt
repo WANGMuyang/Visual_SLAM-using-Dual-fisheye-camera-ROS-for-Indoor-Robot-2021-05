@@ -11,7 +11,7 @@
 주의 사항)
  - OpenVSLAM 커뮤니티 ( https://openvslam-community.readthedocs.io/en/latest/index.html ) 보고 참고 할 것
  - 중요한 건 SocketViewer 사용하는 옵션으로 빌드할 것
- - ROS 빌드 할 경우 ~/openvslam/ros/src 안에 필요한 ros node들을 넣고 
+ - ROS 빌드 할 경우 ~/openvslam/ros/src 안에 필요한 ros_node 폴더 안의 것들을 넣고 
 
    catkin_make -DUSE_PANGOLIN_VIEWER=OFF -DUSE_SOCKET_PUBLISHER=ON 실행 할 것
 
